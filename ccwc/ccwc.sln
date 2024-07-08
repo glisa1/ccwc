@@ -5,6 +5,11 @@ VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ccwc", "ccwc\ccwc.csproj", "{25FF3FA6-74C6-4E5D-81E2-2BAFD613BBE6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{D4B68AB3-C5BA-403D-9079-D4F60E0118A5}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\Users\LENOVO\Desktop\test.txt = ..\..\..\Users\LENOVO\Desktop\test.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

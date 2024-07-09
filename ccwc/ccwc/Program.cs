@@ -1,4 +1,6 @@
-﻿if (args.Length < 2)
+﻿using System.Text;
+
+if (args.Length < 2)
     return;
 
 var inputFile = args[1] ?? throw new ArgumentException("File not provided as a parameter.");
@@ -15,9 +17,16 @@ if (args[0] == "-l")
     Console.WriteLine($"{lines.Length} {inputFile}");
 }
 
-if ( args[0] == "-w")
+if (args[0] == "-w")
 {
     var text = await File.ReadAllTextAsync(inputFile) ?? throw new Exception("File not found");
     var words = text.Split([' ', '\r', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries);
     Console.WriteLine($"{words.Length} {inputFile}");
+}
+
+if (args[0] == "-m")
+{
+    var text = await File.ReadAllTextAsync(inputFile) ?? throw new Exception("File not found");
+    var chars = text.ToCharArray();
+    Console.WriteLine($"{chars.Length} {inputFile}");
 }

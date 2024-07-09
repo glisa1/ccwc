@@ -14,3 +14,10 @@ if (args[0] == "-l")
     var lines = await File.ReadAllLinesAsync(inputFile) ?? throw new Exception("File not found");
     Console.WriteLine($"{lines.Length} {inputFile}");
 }
+
+if ( args[0] == "-w")
+{
+    var text = await File.ReadAllTextAsync(inputFile) ?? throw new Exception("File not found");
+    var words = text.Split([' ', '\r', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries);
+    Console.WriteLine($"{words.Length} {inputFile}");
+}

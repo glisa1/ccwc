@@ -1,48 +1,135 @@
 ﻿using ccwc;
 
-if (args.Length == 0)
+if (!Console.IsInputRedirected && args.Length == 0)
     return;
 
-if (args.Length == 1)
+var fileContent = string.Empty;
+var fileName = string.Empty;
+var operation = string.Empty;
+
+if (Console.IsInputRedirected)
 {
-    var inputFile = args[0];
-    var fileMethods = new FileMethods(inputFile);
-    var bytesCount = await fileMethods.GetBytesCount();
-    var linesCount = await fileMethods.GetLinesCount();
-    var wordsCount = await fileMethods.GetWordsCount();
+    fileContent = await Console.In.ReadToEndAsync();
 
-    Console.WriteLine($"{linesCount} {wordsCount} {bytesCount} {inputFile}");
+    Console.WriteLine($"InputRedirected length: {fileContent.Length}");
 
+    if (string.IsNullOrEmpty(fileContent))
+    {
+        Console.Error.WriteLine("Input was empty.");
+        return;
+    }
+
+    if (args.Length > 0)
+    {
+        operation = args[0];
+    }
+}
+else if (args.Length == 1)
+{
+    fileName = args[0];
 }
 else if (args.Length == 2)
 {
-    var inputFile = args[1];
-    var fileMethods = new FileMethods(inputFile);
+    operation = args[0];
+    fileName = args[1];
+}
+else
+{
+    Console.Error.WriteLine("Invalid number of parameters.");
+    return;
+}
 
-    if (args[0] == "-c")
+var utilMethods = new UtilMethods();
+
+if (Console.IsInputRedirected)
+{
+    if (args.Length == 0)
     {
-        var bytesCount = await fileMethods.GetBytesCount();
-        Console.WriteLine($"{bytesCount} {inputFile}");
-    }
+        var bytesCount = utilMethods.GetBytesCountFromString(fileContent);
+        var linesCount = utilMethods.GetLinesCountFromString(fileContent);
+        var wordsCount = utilMethods.GetWordsCountFromString(fileContent);
 
-    else if (args[0] == "-l")
+        Console.WriteLine($"{linesCount} {wordsCount} {bytesCount}");
+        return;
+    }
+    else if (args.Length == 1)
     {
-        var linesCount = await fileMethods.GetLinesCount();
-        Console.WriteLine($"{linesCount} {inputFile}");
-    }
+        if (operation == "-c")
+        {
+            var bytesCount = utilMethods.GetBytesCountFromString(fileContent);
+            Console.WriteLine($"{bytesCount}");
+            return;
+        }
 
-    else if (args[0] == "-w")
+        else if (operation == "-l")
+        {
+            var linesCount = utilMethods.GetLinesCountFromString(fileContent);
+            Console.WriteLine($"{linesCount}");
+            return;
+        }
+
+        else if (operation == "-w")
+        {
+            var wordsCount = utilMethods.GetWordsCountFromString(fileContent);
+            Console.WriteLine($"{wordsCount}");
+            return;
+        }
+
+        else if (operation == "-m")
+        {
+            var charactersCount = utilMethods.GetCharactersCountFromString(fileContent);
+            Console.WriteLine($"{charactersCount}");
+            return;
+        }
+
+        else
+        {
+            Console.Error.WriteLine("Command not supported.");
+            return;
+        }
+    }
+}
+else
+{
+    if (args.Length == 1)
     {
-        var wordsCount = await fileMethods.GetWordsCount();
-        Console.WriteLine($"{wordsCount} {inputFile}");
-    }
+        var bytesCount = await utilMethods.GetBytesCountFromFile(fileName);
+        var linesCount = await utilMethods.GetLinesCountFromFile(fileName);
+        var wordsCount = await utilMethods.GetWordsCountFromFile(fileName);
 
-    else if (args[0] == "-m")
+        Console.WriteLine($"{linesCount} {wordsCount} {bytesCount} {fileName}");
+        return;
+    }
+    else if (args.Length == 2)
     {
-        var charactersCount = await fileMethods.GetCharactersCount();
-        Console.WriteLine($"{charactersCount} {inputFile}");
+        if (args[0] == "-c")
+        {
+            var bytesCount = await utilMethods.GetBytesCountFromFile(fileName);
+            Console.WriteLine($"{bytesCount} {fileName}");
+            return;
+        }
+        else if (args[0] == "-l")
+        {
+            var linesCount = await utilMethods.GetLinesCountFromFile(fileName);
+            Console.WriteLine($"{linesCount} {fileName}");
+            return;
+        }
+        else if (args[0] == "-w")
+        {
+            var wordsCount = await utilMethods.GetWordsCountFromFile(fileName);
+            Console.WriteLine($"{wordsCount} {fileName}");
+            return;
+        }
+        else if (args[0] == "-m")
+        {
+            var charactersCount = await utilMethods.GetCharactersCountFromFile(fileName);
+            Console.WriteLine($"{charactersCount} {fileName}");
+            return;
+        }
+        else
+        {
+            Console.Error.WriteLine("Command not supported.");
+            return;
+        }
     }
-
-    else
-        Console.WriteLine("Command not supported.");
 }

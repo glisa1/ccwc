@@ -49,43 +49,50 @@ internal class Program
 
     private static async Task PrintOutputAsync(UtilMethods utilMethods, CommandArgumensWithValueConfig opts)
     {
-        var fileName = opts.FileName ?? string.Empty;
-        if (opts.NoOptionsParsed())
+        try
         {
-            var byteCount = await utilMethods.GetByteCount();
-            var lineCount = await utilMethods.GetLineCount();
-            var wordCount = await utilMethods.GetWordCount();
+            var fileName = opts.FileName ?? string.Empty;
+            if (opts.NoOptionsParsed())
+            {
+                var byteCount = await utilMethods.GetByteCount();
+                var lineCount = await utilMethods.GetLineCount();
+                var wordCount = await utilMethods.GetWordCount();
 
-            Console.WriteLine($"{lineCount} {wordCount} {byteCount} {fileName}");
-            return;
+                Console.WriteLine($"{lineCount} {wordCount} {byteCount} {fileName}");
+                return;
+            }
+
+            var stringBuilder = new StringBuilder();
+
+            if (opts.LinesCount)
+            {
+                var lineCount = await utilMethods.GetLineCount();
+                stringBuilder.Append($"{lineCount} ");
+            }
+
+            if (opts.WordsCount)
+            {
+                var wordCount = await utilMethods.GetWordCount();
+                stringBuilder.Append($"{wordCount} ");
+            }
+
+            if (opts.BytesCount)
+            {
+                var byteCount = await utilMethods.GetByteCount();
+                stringBuilder.Append($"{byteCount} ");
+            }
+
+            if (opts.CharactersCount)
+            {
+                var charactersCount = await utilMethods.GetCharacterCount();
+                stringBuilder.Append($"{charactersCount} ");
+            }
+
+            Console.WriteLine(stringBuilder.Append(fileName).ToString());
         }
-
-        var stringBuilder = new StringBuilder();
-
-        if (opts.LinesCount)
+        catch (Exception ex)
         {
-            var lineCount = await utilMethods.GetLineCount();
-            stringBuilder.Append($"{lineCount} ");
+            Console.Error.WriteLine(ex.Message);
         }
-
-        if (opts.WordsCount)
-        {
-            var wordCount = await utilMethods.GetWordCount();
-            stringBuilder.Append($"{wordCount} ");
-        }
-
-        if (opts.BytesCount)
-        {
-            var byteCount = await utilMethods.GetByteCount();
-            stringBuilder.Append($"{byteCount} ");
-        }
-
-        if (opts.CharactersCount)
-        {
-            var charactersCount = await utilMethods.GetCharacterCount();
-            stringBuilder.Append($"{charactersCount} ");
-        }
-
-        Console.WriteLine(stringBuilder.Append(fileName).ToString());
     }
 }

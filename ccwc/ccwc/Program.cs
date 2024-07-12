@@ -1,176 +1,91 @@
 ﻿using ccwc;
 using ccwc.Config;
 using CommandLine;
+using System.Text;
 
 internal class Program
 {
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         if (Console.IsInputRedirected)
         {
-            Parser.Default.ParseArguments<CommandArgumensConfig>(args)
-                .WithParsedAsync(RunWithParsedArguments);
+            await Parser.Default.ParseArguments<CommandArgumensConfig>(args)
+                .WithParsedAsync(RunWithParsedArgumentsAsync);
         }
         else
         {
-            Parser.Default.ParseArguments<CommandArgumensWithValueConfig>(args)
+            await Parser.Default.ParseArguments<CommandArgumensWithValueConfig>(args)
                 .WithParsedAsync(RunWithParsedArgumentsAndValues);
         }
     }
 
-    static Task RunWithParsedArguments(CommandArgumensConfig opts)
+    private static async Task RunWithParsedArgumentsAsync(CommandArgumensConfig opts)
     {
-        //handle options
-        Console.WriteLine("Parse succeded");
-        Console.WriteLine($"BytesCount: {opts.BytesCount}");
-        Console.WriteLine($"LinesCount: {opts.LinesCount}");
-        Console.WriteLine($"WordsCount: {opts.WordsCount}");
-        Console.WriteLine($"CharactersCount: {opts.CharactersCount}");
-        return Task.CompletedTask;
+        var fileContent = await Console.In.ReadToEndAsync();
+
+        if (string.IsNullOrEmpty(fileContent))
+        {
+            Console.Error.WriteLine("Input was empty.");
+            return;
+        }
+
+        var methods = new UtilMethods(fileContent: fileContent);
+        var opts1 = new CommandArgumensWithValueConfig
+        {
+            BytesCount = opts.BytesCount,
+            CharactersCount = opts.CharactersCount,
+            LinesCount = opts.LinesCount,
+            WordsCount = opts.WordsCount,
+        };
+
+        await PrintOutputAsync(methods, opts1);
     }
 
-    static Task RunWithParsedArgumentsAndValues(CommandArgumensWithValueConfig opts)
+    private static async Task RunWithParsedArgumentsAndValues(CommandArgumensWithValueConfig opts)
     {
-        Console.WriteLine("Parse succeded");
-        Console.WriteLine($"BytesCount: {opts.BytesCount}");
-        Console.WriteLine($"LinesCount: {opts.LinesCount}");
-        Console.WriteLine($"WordsCount: {opts.WordsCount}");
-        Console.WriteLine($"CharactersCount: {opts.CharactersCount}");
-        Console.WriteLine($"FileName: {opts.FileName}");
-        return Task.CompletedTask;
+        var methods = new UtilMethods(opts.FileName);
+        await PrintOutputAsync(methods, opts);
+    }
+
+    private static async Task PrintOutputAsync(UtilMethods utilMethods, CommandArgumensWithValueConfig opts)
+    {
+        var fileName = opts.FileName ?? string.Empty;
+        if (opts.NoOptionsParsed())
+        {
+            var byteCount = await utilMethods.GetByteCount();
+            var lineCount = await utilMethods.GetLineCount();
+            var wordCount = await utilMethods.GetWordCount();
+
+            Console.WriteLine($"{lineCount} {wordCount} {byteCount} {fileName}");
+            return;
+        }
+
+        var stringBuilder = new StringBuilder();
+
+        if (opts.LinesCount)
+        {
+            var lineCount = await utilMethods.GetLineCount();
+            stringBuilder.Append($"{lineCount} ");
+        }
+
+        if (opts.WordsCount)
+        {
+            var wordCount = await utilMethods.GetWordCount();
+            stringBuilder.Append($"{wordCount} ");
+        }
+
+        if (opts.BytesCount)
+        {
+            var byteCount = await utilMethods.GetByteCount();
+            stringBuilder.Append($"{byteCount} ");
+        }
+
+        if (opts.CharactersCount)
+        {
+            var charactersCount = await utilMethods.GetCharacterCount();
+            stringBuilder.Append($"{charactersCount} ");
+        }
+
+        Console.WriteLine(stringBuilder.Append(fileName).ToString());
     }
 }
-
-//if (!Console.IsInputRedirected && args.Length == 0)
-//    return;
-
-//var fileContent = string.Empty;
-//var fileName = string.Empty;
-//var operation = string.Empty;
-
-//if (Console.IsInputRedirected)
-//{
-//    fileContent = await Console.In.ReadToEndAsync();
-
-//    Console.WriteLine($"InputRedirected length: {fileContent.Length}");
-
-//    if (string.IsNullOrEmpty(fileContent))
-//    {
-//        Console.Error.WriteLine("Input was empty.");
-//        return;
-//    }
-
-//    if (args.Length > 0)
-//    {
-//        operation = args[0];
-//    }
-//}
-//else if (args.Length == 1)
-//{
-//    fileName = args[0];
-//}
-//else if (args.Length == 2)
-//{
-//    operation = args[0];
-//    fileName = args[1];
-//}
-//else
-//{
-//    Console.Error.WriteLine("Invalid number of parameters.");
-//    return;
-//}
-
-//var utilMethods = new UtilMethods();
-
-//if (Console.IsInputRedirected)
-//{
-//    if (args.Length == 0)
-//    {
-//        var bytesCount = utilMethods.GetBytesCountFromString(fileContent);
-//        var linesCount = utilMethods.GetLinesCountFromString(fileContent);
-//        var wordsCount = utilMethods.GetWordsCountFromString(fileContent);
-
-//        Console.WriteLine($"{linesCount} {wordsCount} {bytesCount}");
-//        return;
-//    }
-//    else if (args.Length == 1)
-//    {
-//        if (operation == "-c")
-//        {
-//            var bytesCount = utilMethods.GetBytesCountFromString(fileContent);
-//            Console.WriteLine($"{bytesCount}");
-//            return;
-//        }
-
-//        else if (operation == "-l")
-//        {
-//            var linesCount = utilMethods.GetLinesCountFromString(fileContent);
-//            Console.WriteLine($"{linesCount}");
-//            return;
-//        }
-
-//        else if (operation == "-w")
-//        {
-//            var wordsCount = utilMethods.GetWordsCountFromString(fileContent);
-//            Console.WriteLine($"{wordsCount}");
-//            return;
-//        }
-
-//        else if (operation == "-m")
-//        {
-//            var charactersCount = utilMethods.GetCharactersCountFromString(fileContent);
-//            Console.WriteLine($"{charactersCount}");
-//            return;
-//        }
-
-//        else
-//        {
-//            Console.Error.WriteLine("Command not supported.");
-//            return;
-//        }
-//    }
-//}
-//else
-//{
-//    if (args.Length == 1)
-//    {
-//        var bytesCount = await utilMethods.GetBytesCountFromFile(fileName);
-//        var linesCount = await utilMethods.GetLinesCountFromFile(fileName);
-//        var wordsCount = await utilMethods.GetWordsCountFromFile(fileName);
-
-//        Console.WriteLine($"{linesCount} {wordsCount} {bytesCount} {fileName}");
-//        return;
-//    }
-//    else if (args.Length == 2)
-//    {
-//        if (args[0] == "-c")
-//        {
-//            var bytesCount = await utilMethods.GetBytesCountFromFile(fileName);
-//            Console.WriteLine($"{bytesCount} {fileName}");
-//            return;
-//        }
-//        else if (args[0] == "-l")
-//        {
-//            var linesCount = await utilMethods.GetLinesCountFromFile(fileName);
-//            Console.WriteLine($"{linesCount} {fileName}");
-//            return;
-//        }
-//        else if (args[0] == "-w")
-//        {
-//            var wordsCount = await utilMethods.GetWordsCountFromFile(fileName);
-//            Console.WriteLine($"{wordsCount} {fileName}");
-//            return;
-//        }
-//        else if (args[0] == "-m")
-//        {
-//            var charactersCount = await utilMethods.GetCharactersCountFromFile(fileName);
-//            Console.WriteLine($"{charactersCount} {fileName}");
-//            return;
-//        }
-//        else
-//        {
-//            Console.Error.WriteLine("Command not supported.");
-//            return;
-//        }
-//    }
-//}
